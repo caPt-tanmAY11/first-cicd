@@ -39,6 +39,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    
+    outputs:
+      image_name: ${{ steps.image.outputs.name }}
 
     steps:
       - name: Checkout code
