@@ -1,0 +1,25 @@
+name: AWS OIDC Authentication Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-aws-access:
+    name: Verify AWS Access
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::612671145923:role/first-cicd-github-actions-role
+          aws-region: ap-south-1
+          role-session-name: first-cicd-oidc-test-${{ github.run_id }}
+          allowed-account-ids: "612671145923"
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
