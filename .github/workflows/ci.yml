@@ -106,7 +106,6 @@ jobs:
           command -v aws >/dev/null
           command -v jq >/dev/null
 
-          # Prepare the deployment script that EC2 will execute.
           cat > deploy-script.sh <<'SCRIPT'
           #!/bin/sh
           set -eu
@@ -203,17 +202,14 @@ jobs:
           docker image prune -f --filter "until=168h" || true
           SCRIPT
 
-          # Insert the exact image name and commit SHA.
           sed -i \
             -e "s|__IMAGE_NAME__|${IMAGE_NAME}|g" \
             -e "s|__IMAGE_TAG__|${IMAGE_TAG}|g" \
             deploy-script.sh
 
-          # Encode the script as SSM command parameters.
           jq -n --rawfile script deploy-script.sh \
             '{commands: [$script]}' > ssm-parameters.json
 
-          # Send the command to our EC2 instance.
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
@@ -224,7 +220,6 @@ jobs:
 
           echo "SSM command ID: $COMMAND_ID"
 
-          # Wait for EC2 to finish executing the deployment.
           STATUS="Pending"
 
           for attempt in $(seq 1 60); do
